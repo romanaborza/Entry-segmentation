@@ -580,7 +580,7 @@
       <span class="nav-btn-label">Zpět</span>
     </div>
     <div class="nav-btn-group">
-      <button class="circle-btn" onclick="nextFromS8()">→</button>
+      <button class="circle-btn" onclick="goTo('s4')">→</button>
       <span class="nav-btn-label">Pokračovat</span>
     </div>
   </div>
@@ -935,7 +935,7 @@
   //  FLOW (podľa tabuľky):
   //
   //  Newcomer:        s1 → s4(Phone) → s5(IČO) → sLoader
-  //  Migration:       s1 → s2(Migr.source) → s3(URL) → s4(Phone) → s5(IČO) → sLoader
+  //  Migration:       s1 → s2(Migr.source) → s4(Phone) → s5(IČO) → sLoader
   //  Partner:         s1 → s8(Partner code) → s4(Phone) → s5(IČO) → sLoader
   //  Testing:         s1 → s4(Phone) → s5(IČO) → sLoader
   //  Existing:        s1 → s3(URL/ID) → s4(Phone) → s5(IČO) → sLoader
