@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shoptet – Registrace</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #0a6cff;
+    --text-headline: #0f0f0e;
+    --text-primary: #3f3d38;
+    --text-secondary: #706d64;
+    --border: #cfd6dd;
+    --bg: #ffffff;
+    --radius-card: 10px;
+    --radius-btn: 360px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f4f4f2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── SCREEN WRAPPER ── */
+  .screen {
+    display: none;
+    width: 1440px;
+    min-height: 800px;
+    background: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .screen.active { display: block; }
+
+  /* ── NAV ── */
+  nav {
+    position: absolute;
+    top: 24px;
+    left: 0;
+    width: 100%;
+    padding: 0 12px;
+    z-index: 10;
+  }
+  .nav-inner {
+    background: linear-gradient(to right, #ffffff 15%, rgba(255,255,255,0.95) 30%);
+    backdrop-filter: blur(17px);
+    border-radius: 360px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 6px 6px 6px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 66px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-headline);
+  }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .logo-icon span { border-radius: 3px; }
+  .logo-icon span:nth-child(1) { background: #e63; }
+  .logo-icon span:nth-child(2) { background: #0a6cff; }
+  .logo-icon span:nth-child(3) { background: #2ca; }
+  .logo-icon span:nth-child(4) { background: #fc0; }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding-right: 40px;
+  }
+  .progress-dots {
+    display: flex;
+    gap: 4px;
+  }
+  .dot {
+    width: 52px;
+    height: 6px;
+    border-radius: 999px;
+    background: #d9d9d9;
+    transition: background .3s;
+  }
+  .dot.active { background: #3b3434; }
+  .step-label {
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    position: absolute;
+    top: 127px;
+    left: 310px;
+    width: 820px;
+  }
+  .screen-title {
+    font-size: 34px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--text-headline);
+    margin-bottom: 8px;
+  }
+  .screen-sub {
+    font-size: 16px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 38px;
+  }
+
+  /* ── OPTION CARDS ── */
+  .options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .options-row {
+    display: flex;
+    gap: 20px;
+  }
+  .option-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 10px;
+    width: 253px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+    user-select: none;
+    position: relative;
+  }
+  .option-card:hover { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(10,108,255,.08); }
+  .option-card.selected { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(10,108,255,.15); background: #f0f5ff; }
+  .option-card.selected .radio-circle { border-color: var(--blue); }
+  .option-card.selected .radio-dot { opacity: 1; }
+  .option-card.selected .check-box { background: var(--blue); border-color: var(--blue); }
+  .option-card.selected .check-box::after { opacity: 1; }
+
+  .option-label { font-size: 16px; color: var(--text-primary); line-height: 1.6; font-weight: 500; }
+  .option-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; }
+
+  /* radio */
+  .radio-circle {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    margin-top: 2px;
+    transition: border-color .2s;
+  }
+  .radio-dot {
+    position: absolute; inset: 3px;
+    background: var(--blue);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+
+  /* checkbox */
+  .check-box {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    position: relative;
+    transition: background .2s, border-color .2s;
+  }
+  .check-box::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 8px; height: 12px;
+    border: 2px solid white;
+    border-top: none; border-left: none;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+
+  /* wide card (full row) */
+  .option-card.wide { width: 400px; }
+
+  /* ── TEXT INPUT ── */
+  .input-wrap { margin-bottom: 16px; }
+  .input-label { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
+  .text-input {
+    width: 320px;
+    height: 48px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0 14px;
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .text-input:focus { border-color: var(--blue); }
+
+  /* phone input */
+  .phone-row { display: flex; gap: 8px; align-items: center; }
+
+  .country-select-wrap {
+    position: relative;
+    height: 48px;
+  }
+  .country-select-wrap::after {
+    content: "\25BE";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+  .country-select {
+    height: 48px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 0 32px 0 12px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    background: #f8f8f7;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color .2s;
+    min-width: 110px;
+  }
+  .country-select:focus { border-color: var(--blue); background: white; }
+
+  /* validate button */
+  .validate-btn {
+    margin-top: 12px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: border-color .2s, background .2s;
+  }
+  .validate-btn:hover { border-color: var(--blue); background: #f0f5ff; color: var(--blue); }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 120px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    background: white;
+    border-top: 1px solid #f0eeea;
+  }
+  .bottom-bar.has-back { justify-content: space-between; }
+
+  .nav-btn-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .circle-btn {
+    width: 66px; height: 52px;
+    border-radius: var(--radius-btn);
+    border: 2px solid var(--blue);
+    background: var(--blue);
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .15s;
+  }
+  .circle-btn:hover { transform: scale(1.05); }
+  .circle-btn.secondary { background: white; color: var(--blue); }
+  .nav-btn-label { font-size: 14px; color: var(--text-secondary); }
+
+  /* ── LOADER ── */
+  .loader-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .spinner {
+    width: 56px; height: 56px;
+    border: 4px solid #e8edf3;
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 24px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-title {
+    font-size: 28px; font-weight: 500;
+    color: var(--text-headline);
+    margin-bottom: 12px;
+  }
+  .loader-sub { font-size: 16px; color: var(--text-secondary); }
+
+  /* ── TRANSITION ── */
+  .screen { animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+
+  /* ── IČO EXPAND CARDS ── */
+  .ico-card { flex-direction: column; align-items: stretch; }
+  .ico-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .ico-sub {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-top: 4px;
+    display: none;
+  }
+  .ico-input {
+    width: 100%;
+    margin-top: 10px;
+    display: none;
+  }
+  /* When selected: show input (and sub-label for FO) */
+  .ico-card.selected .ico-input { display: block; }
+  .ico-card.selected .ico-sub   { display: block; }
+
+
+  /* ── URL hint (soft warning) ── */
+  .url-hint {
+    display: none;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: #f8f6f2;
+    border-radius: 6px;
+    border: 1px solid #e8e4dc;
+  }
+  .url-hint.visible { display: block; }
+
+  /* ── JINÉ TEXTAREA ── */
+  .jine-textarea {
+    display: none;
+    margin-top: 10px;
+    width: 231px;
+    height: 72px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    background: white;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color .2s;
+  }
+  .jine-textarea:focus { border-color: var(--blue); }
+  #s1-jine-card.selected .jine-textarea { display: block; }
+  #s1-jine-card.selected .option-desc { display: none; }
+  #s1-jine-card.selected { flex-direction: column; align-items: flex-start; }
+  #s1-jine-card.selected > div:first-child { width: 100%; }
+  #s1-jine-card .radio-circle { position: absolute; top: 10px; right: 10px; }
+  .error-msg {
+    display: none;
+    color: #d0312d;
+    font-size: 14px;
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: #fff5f5;
+    border: 1px solid #f5c0be;
+    border-radius: 8px;
+    animation: shake .3s ease;
+  }
+  .error-msg.visible { display: block; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* responsive scale for smaller screens */
+  @media (max-width: 1500px) {
+    body { align-items: flex-start; }
+    .screen { transform-origin: top left; transform: scale(0.9); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 1 – Proč zakládáte e-shop?
+════════════════════════════════════════════════ -->
+<div id="s1" class="screen active">
+  <nav>
+    <div class="nav-inner">
+      <div class="logo" style="gap:0; line-height:0"><svg width="143" height="34" viewBox="0 0 143 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.4485 0H7.90137V13.6019H21.4485V0Z" fill="#FCAF00"/>
+<path d="M13.5471 15.875H0V29.4769H13.5471V15.875Z" fill="#00E25A"/>
+<path d="M29.3567 15.875H15.8096V29.4769H29.3567V15.875Z" fill="#3B88FF"/>
+<path d="M48.212 25.9113C45.1577 25.9113 43.6875 24.8915 43.3891 22.3028H39.1416C39.2908 26.8456 42.5865 29.4272 48.3967 29.4272C53.2124 29.4272 56.7212 26.9954 56.7212 22.6379C56.7212 18.0095 53.1272 16.954 48.7234 15.9913C45.5555 15.2995 44.0568 14.786 44.0568 13.0459C44.0568 11.5126 45.5839 10.5213 47.9208 10.5213C50.2576 10.5213 51.8131 11.5982 52.0546 13.7662H56.2169C55.8831 9.43733 52.772 7.0625 47.9563 7.0625C43.1405 7.0625 39.7525 9.25191 39.7525 13.4952C39.7525 17.9739 43.2542 18.9937 47.0826 19.8637C50.35 20.6126 52.3885 21.0333 52.3885 23.1372C52.3885 25.1269 50.4423 25.9042 48.2262 25.9042" fill="black"/>
+<path d="M68.8458 28.9478H72.9229V18.878C72.9229 15.5047 70.792 13.1014 67.617 13.1014C65.5217 13.1014 64.2645 13.9144 63.1564 15.5404H63.0712V7.45312H58.9941V28.9549H63.0712V20.2044C63.0712 18.1006 64.3852 16.66 66.1823 16.66C67.887 16.66 68.8458 17.8296 68.8458 19.4842V28.9549V28.9478Z" fill="black"/>
+<path d="M82.7037 29.4044C87.4698 29.4044 90.7371 25.8529 90.7371 21.253C90.7371 16.6531 87.4769 13.1016 82.7037 13.1016C77.9306 13.1016 74.6846 16.6531 74.6846 21.253C74.6846 25.8529 77.9448 29.4044 82.7037 29.4044ZM82.7037 16.2038C85.1968 16.2038 86.5961 18.2435 86.5961 21.253C86.5961 24.2625 85.1897 26.2665 82.7037 26.2665C80.2177 26.2665 78.8113 24.2554 78.8113 21.253C78.8113 18.2506 80.1893 16.2038 82.7037 16.2038Z" fill="black"/>
+<path d="M101.157 13.1048C99.0615 13.1048 97.6267 14.1032 96.6323 15.4582H96.547V13.5327H92.6191V34.0004H96.6962V27.204H96.7601C97.6267 28.5233 99.033 29.4005 101.192 29.4005C105.149 29.4005 107.834 26.2412 107.834 21.2491C107.834 16.257 105.234 13.0977 101.157 13.0977M100.319 25.9987C97.8895 25.9987 96.6039 24.173 96.6039 21.3703C96.6039 18.5676 97.6196 16.4067 100.17 16.4067C102.719 16.4067 103.7 18.4535 103.7 21.3703C103.7 24.2872 102.386 25.9987 100.319 25.9987Z" fill="black"/>
+<path d="M129.22 24.3481C128.773 25.5248 127.842 26.2451 126.258 26.2451C123.95 26.2451 122.636 24.776 122.33 22.3941H133.468C133.468 16.8956 130.832 13.1016 125.896 13.1016C121.407 13.1016 118.324 16.6531 118.324 21.2173C118.324 25.7816 121.194 29.3973 126.287 29.3973C130.243 29.3973 132.672 27.0795 133.24 24.341H129.227L129.22 24.3481ZM125.96 16.2609C127.814 16.2609 129.099 17.6159 129.22 19.5699H122.387C122.749 17.5588 123.801 16.2609 125.96 16.2609Z" fill="black"/>
+<path d="M134.164 13.5319V16.2419H136.295V25.2848C136.295 28.2016 138.476 28.979 140.457 28.979C142.07 28.979 143 28.9219 143 28.9219V25.9124C143 25.9124 142.304 25.9409 141.8 25.9409C140.898 25.9409 140.273 25.5487 140.273 24.4076V16.2348H142.908V13.5248H139.363C139.363 13.5248 140.109 13.0969 140.28 12.0771V8.71094H136.302V11.4994C136.238 13.1967 134.171 13.5176 134.171 13.5176L134.164 13.5319Z" fill="black"/>
+<path d="M108.373 13.5319V16.2419H110.504V25.2848C110.504 28.2016 112.684 28.979 114.666 28.979C116.279 28.979 117.209 28.9219 117.209 28.9219V25.9124C117.209 25.9124 116.513 25.9409 116.009 25.9409C115.107 25.9409 114.482 25.5487 114.482 24.4076V16.2348H117.117V13.5248H113.572C113.572 13.5248 114.318 13.0969 114.489 12.0771V8.71094H110.511V11.4994C110.447 13.1967 108.38 13.5176 108.38 13.5176L108.373 13.5319Z" fill="black"/>
+</svg></div>
+      <div class="nav-right">
+        <div class="progress-dots">
+          <div class="dot active"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <span class="step-label">Krok 1 z 4</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1 class="screen-title">Proč zakládáte e-shop? *</h1>
+    <p class="screen-sub">Tato informace pomůže lépe přizpůsobit váš zážitek v Shoptetu.</p>
+
+    <div class="options-grid">
+      <div class="options-row">
+        <div class="option-card" onclick="selectRadio(this,'s1-reason')" data-group="s1-reason">
+          <div>
+            <div class="option-label">Zatím nemám e-shop</div>
+            <div class="option-desc">Chci začít prodávat online a vybudovat svůj první e-shop.</div>
+          </div>
+          <div class="radio-circle"><div class="radio-dot"></div></div>
+        </div>
+        <div class="option-card" onclick="selectRadio(this,'s1-reason')" data-group="s1-reason">
+          <div>
+            <div class="option-label">Chci si Shoptet vyzkoušet</div>
+            <div class="option-desc">Chci prozkoumat funkce a možnosti platformy bez závazků.</div>
+          </div>
+          <div class="radio-circle"><div class="radio-dot"></div></div>
+        </div>
+        <div class="option-card" onclick="selectRadio(this,'s1-reason')" data-group="s1-reason" id="s1-migrate">
+          <div>
+            <div class="option-label">Chci svůj e-shop převést na Shoptet</div>
+            <div class="option-desc">Provozuji e-shop na jiné platformě a uvažuji o přechodu.</div>
+          </div>
+          <div class="radio-circle"><div class="radio-dot"></div></div>
+        </div>
+      </div>
+      <div class="options-row">
+        <div class="option-card" onclick="selectRadio(this,'s1-reason')" data-group="s1-reason">
+          <div>
+            <div class="option-label">Už e-shop na Shoptetu mám a chci pořídit další</div>
+            <div class="option-desc">Chci rozšířit své podnikání a spustit nový e-shop.</div>
+          </div>
+          <div class="radio-circle"><div class="radio-dot"></div></div>
+        </div>
+        <div class="option-card" onclick="selectRadio(this,'s1-reason')" data-group="s1-reason" id="s1-partner">
+          <div>
+            <div class="option-label">Vytvářím e-shop pro klienta</div>
+            <div class="option-desc">Jsem Shoptet Partner nebo freelancer a spravuji e-shopy pro své klienty.</div>
+          </div>
+          <div class="radio-circle"><div class="radio-dot"></div></div>
+        </div>
+        <div class="option-card" id="s1-jine-card" onclick="selectJine(this)" data-group="s1-reason">
+          <div style="width:100%">
+            <div class="option-label">Jiné</div>
+            <div class="option-desc" id="s1-jine-desc">Můj důvod není v seznamu</div>
+            <textarea id="s1-jine-input" class="jine-textarea" placeholder="Popište váš důvod" onclick="event.stopPropagation()"></textarea>
+          </div>
+          <div class="radio-circle" style="flex-shrink:0; margin-top:2px"><div class="radio-dot"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="s1-error" class="error-msg">⚠ Tato otázka je povinná. Prosím, vyberte jednu z možností.</div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="nav-btn-group">
+      <button class="circle-btn" onclick="nextFromS1()" data-comment-anchor="9bf5a360a2-button">→</button>
+      <span class="nav-btn-label">Pokračovat</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 2 – Z jakého systému přicházíte? (migration)
+════════════════════════════════════════════════ -->
+<div id="s2" class="screen">
+  <nav>
+    <div class="nav-inner">
+      <div class="logo" style="gap:0; line-height:0"><svg width="143" height="34" viewBox="0 0 143 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.4485 0H7.90137V13.6019H21.4485V0Z" fill="#FCAF00"/>
+<path d="M13.5471 15.875H0V29.4769H13.5471V15.875Z" fill="#00E25A"/>
+<path d="M29.3567 15.875H15.8096V29.4769H29.3567V15.875Z" fill="#3B88FF"/>
+<path d="M48.212 25.9113C45.1577 25.9113 43.6875 24.8915 43.3891 22.3028H39.1416C39.2908 26.8456 42.5865 29.4272 48.3967 29.4272C53.2124 29.4272 56.7212 26.9954 56.7212 22.6379C56.7212 18.0095 53.1272 16.954 48.7234 15.9913C45.5555 15.2995 44.0568 14.786 44.0568 13.0459C44.0568 11.5126 45.5839 10.5213 47.9208 10.5213C50.2576 10.5213 51.8131 11.5982 52.0546 13.7662H56.2169C55.8831 9.43733 52.772 7.0625 47.9563 7.0625C43.1405 7.0625 39.7525 9.25191 39.7525 13.4952C39.7525 17.9739 43.2542 18.9937 47.0826 19.8637C50.35 20.6126 52.3885 21.0333 52.3885 23.1372C52.3885 25.1269 50.4423 25.9042 48.2262 25.9042" fill="black"/>
+<path d="M68.8458 28.9478H72.9229V18.878C72.9229 15.5047 70.792 13.1014 67.617 13.1014C65.5217 13.1014 64.2645 13.9144 63.1564 15.5404H63.0712V7.45312H58.9941V28.9549H63.0712V20.2044C63.0712 18.1006 64.3852 16.66 66.1823 16.66C67.887 16.66 68.8458 17.8296 68.8458 19.4842V28.9549V28.9478Z" fill="black"/>
+<path d="M82.7037 29.4044C87.4698 29.4044 90.7371 25.8529 90.7371 21.253C90.7371 16.6531 87.4769 13.1016 82.7037 13.1016C77.9306 13.1016 74.6846 16.6531 74.6846 21.253C74.6846 25.8529 77.9448 29.4044 82.7037 29.4044ZM82.7037 16.2038C85.1968 16.2038 86.5961 18.2435 86.5961 21.253C86.5961 24.2625 85.1897 26.2665 82.7037 26.2665C80.2177 26.2665 78.8113 24.2554 78.8113 21.253C78.8113 18.2506 80.1893 16.2038 82.7037 16.2038Z" fill="black"/>
+<path d="M101.157 13.1048C99.0615 13.1048 97.6267 14.1032 96.6323 15.4582H96.547V13.5327H92.6191V34.0004H96.6962V27.204H96.7601C97.6267 28.5233 99.033 29.4005 101.192 29.4005C105.149 29.4005 107.834 26.2412 107.834 21.2491C107.834 16.257 105.234 13.0977 101.157 13.0977M100.319 25.9987C97.8895 25.9987 96.6039 24.173 96.6039 21.3703C96.6039 18.5676 97.6196 16.4067 100.17 16.4067C102.719 16.4067 103.7 18.4535 103.7 21.3703C103.7 24.2872 102.386 25.9987 100.319 25.9987Z" fill="black"/>
+<path d="M129.22 24.3481C128.773 25.5248 127.842 26.2451 126.258 26.2451C123.95 26.2451 122.636 24.776 122.33 22.3941H133.468C133.468 16.8956 130.832 13.1016 125.896 13.1016C121.407 13.1016 118.324 16.6531 118.324 21.2173C118.324 25.7816 121.194 29.3973 126.287 29.3973C130.243 29.3973 132.672 27.0795 133.24 24.341H129.227L129.22 24.3481ZM125.96 16.2609C127.814 16.2609 129.099 17.6159 129.22 19.5699H122.387C122.749 17.5588 123.801 16.2609 125.96 16.2609Z" fill="black"/>
+<path d="M134.164 13.5319V16.2419H136.295V25.2848C136.295 28.2016 138.476 28.979 140.457 28.979C142.07 28.979 143 28.9219 143 28.9219V25.9124C143 25.9124 142.304 25.9409 141.8 25.9409C140.898 25.9409 140.273 25.5487 140.273 24.4076V16.2348H142.908V13.5248H139.363C139.363 13.5248 140.109 13.0969 140.28 12.0771V8.71094H136.302V11.4994C136.238 13.1967 134.171 13.5176 134.171 13.5176L134.164 13.5319Z" fill="black"/>
+<path d="M108.373 13.5319V16.2419H110.504V25.2848C110.504 28.2016 112.684 28.979 114.666 28.979C116.279 28.979 117.209 28.9219 117.209 28.9219V25.9124C117.209 25.9124 116.513 25.9409 116.009 25.9409C115.107 25.9409 114.482 25.5487 114.482 24.4076V16.2348H117.117V13.5248H113.572C113.572 13.5248 114.318 13.0969 114.489 12.0771V8.71094H110.511V11.4994C110.447 13.1967 108.38 13.5176 108.38 13.5176L108.373 13.5319Z" fill="black"/>
+</svg></div>
+      <div class="nav-right">
+        <div class="progress-dots">
+          <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <span class="step-label">Krok 1 z 4</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1 class="screen-title">Z kterého systému přicházíte?</h1>
+    <p class="screen-sub">S migrací na Shoptet vám můžeme pomoci.</p>
+
+    <div class="options-grid">
+      <div class="options-row">
+        <div class="option-card" onclick="toggleCheck(this,'s2-system')">
+          <div><div class="option-label">PrestaShop</div></div>
+          <div class="check-box"></div>
+        </div>
+        <div class="option-card" onclick="toggleCheck(this,'s2-system')">
+          <div><div class="option-label">Eshop-rychle</div></div>
+          <div class="check-box"></div>
+        </div>
+        <div class="option-card" onclick="toggleCheck(this,'s2-system')">
+          <div><div class="option-label">Upgates</div></div>
+          <div class="check-box"></div>
+        </div>
+      </div>
+      <div class="options-row">
+        <div class="option-card" onclick="toggleCheck(this,'s2-system')">
+          <div><div class="option-label">Shopify</div></div>
+          <div class="check-box"></div>
+        </div>
+        <div class="option-card" onclick="toggleCheck(this,'s2-system')" id="s2-jine">
+          <div><div class="option-label">Jiné</div></div>
+          <div class="check-box"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar has-back">
+    <div class="nav-btn-group">
+      <button class="circle-btn secondary" onclick="goTo('s1')">←</button>
+      <span class="nav-btn-label">Zpět</span>
+    </div>
+    <div class="nav-btn-group">
+      <button class="circle-btn" onclick="nextFromS8()">→</button>
+      <span class="nav-btn-label">Pokračovat</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 3 – URL e-shopu (existing customer only)
+════════════════════════════════════════════════ -->
+<div id="s3" class="screen">
+  <nav>
+    <div class="nav-inner">
+      <div class="logo" style="gap:0; line-height:0"><svg width="143" height="34" viewBox="0 0 143 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.4485 0H7.90137V13.6019H21.4485V0Z" fill="#FCAF00"/>
+<path d="M13.5471 15.875H0V29.4769H13.5471V15.875Z" fill="#00E25A"/>
+<path d="M29.3567 15.875H15.8096V29.4769H29.3567V15.875Z" fill="#3B88FF"/>
+<path d="M48.212 25.9113C45.1577 25.9113 43.6875 24.8915 43.3891 22.3028H39.1416C39.2908 26.8456 42.5865 29.4272 48.3967 29.4272C53.2124 29.4272 56.7212 26.9954 56.7212 22.6379C56.7212 18.0095 53.1272 16.954 48.7234 15.9913C45.5555 15.2995 44.0568 14.786 44.0568 13.0459C44.0568 11.5126 45.5839 10.5213 47.9208 10.5213C50.2576 10.5213 51.8131 11.5982 52.0546 13.7662H56.2169C55.8831 9.43733 52.772 7.0625 47.9563 7.0625C43.1405 7.0625 39.7525 9.25191 39.7525 13.4952C39.7525 17.9739 43.2542 18.9937 47.0826 19.8637C50.35 20.6126 52.3885 21.0333 52.3885 23.1372C52.3885 25.1269 50.4423 25.9042 48.2262 25.9042" fill="black"/>
+<path d="M68.8458 28.9478H72.9229V18.878C72.9229 15.5047 70.792 13.1014 67.617 13.1014C65.5217 13.1014 64.2645 13.9144 63.1564 15.5404H63.0712V7.45312H58.9941V28.9549H63.0712V20.2044C63.0712 18.1006 64.3852 16.66 66.1823 16.66C67.887 16.66 68.8458 17.8296 68.8458 19.4842V28.9549V28.9478Z" fill="black"/>
+<path d="M82.7037 29.4044C87.4698 29.4044 90.7371 25.8529 90.7371 21.253C90.7371 16.6531 87.4769 13.1016 82.7037 13.1016C77.9306 13.1016 74.6846 16.6531 74.6846 21.253C74.6846 25.8529 77.9448 29.4044 82.7037 29.4044ZM82.7037 16.2038C85.1968 16.2038 86.5961 18.2435 86.5961 21.253C86.5961 24.2625 85.1897 26.2665 82.7037 26.2665C80.2177 26.2665 78.8113 24.2554 78.8113 21.253C78.8113 18.2506 80.1893 16.2038 82.7037 16.2038Z" fill="black"/>
+<path d="M101.157 13.1048C99.0615 13.1048 97.6267 14.1032 96.6323 15.4582H96.547V13.5327H92.6191V34.0004H96.6962V27.204H96.7601C97.6267 28.5233 99.033 29.4005 101.192 29.4005C105.149 29.4005 107.834 26.2412 107.834 21.2491C107.834 16.257 105.234 13.0977 101.157 13.0977M100.319 25.9987C97.8895 25.9987 96.6039 24.173 96.6039 21.3703C96.6039 18.5676 97.6196 16.4067 100.17 16.4067C102.719 16.4067 103.7 18.4535 103.7 21.3703C103.7 24.2872 102.386 25.9987 100.319 25.9987Z" fill="black"/>
+<path d="M129.22 24.3481C128.773 25.5248 127.842 26.2451 126.258 26.2451C123.95 26.2451 122.636 24.776 122.33 22.3941H133.468C133.468 16.8956 130.832 13.1016 125.896 13.1016C121.407 13.1016 118.324 16.6531 118.324 21.2173C118.324 25.7816 121.194 29.3973 126.287 29.3973C130.243 29.3973 132.672 27.0795 133.24 24.341H129.227L129.22 24.3481ZM125.96 16.2609C127.814 16.2609 129.099 17.6159 129.22 19.5699H122.387C122.749 17.5588 123.801 16.2609 125.96 16.2609Z" fill="black"/>
+<path d="M134.164 13.5319V16.2419H136.295V25.2848C136.295 28.2016 138.476 28.979 140.457 28.979C142.07 28.979 143 28.9219 143 28.9219V25.9124C143 25.9124 142.304 25.9409 141.8 25.9409C140.898 25.9409 140.273 25.5487 140.273 24.4076V16.2348H142.908V13.5248H139.363C139.363 13.5248 140.109 13.0969 140.28 12.0771V8.71094H136.302V11.4994C136.238 13.1967 134.171 13.5176 134.171 13.5176L134.164 13.5319Z" fill="black"/>
+<path d="M108.373 13.5319V16.2419H110.504V25.2848C110.504 28.2016 112.684 28.979 114.666 28.979C116.279 28.979 117.209 28.9219 117.209 28.9219V25.9124C117.209 25.9124 116.513 25.9409 116.009 25.9409C115.107 25.9409 114.482 25.5487 114.482 24.4076V16.2348H117.117V13.5248H113.572C113.572 13.5248 114.318 13.0969 114.489 12.0771V8.71094H110.511V11.4994C110.447 13.1967 108.38 13.5176 108.38 13.5176L108.373 13.5319Z" fill="black"/>
+</svg></div>
+      <div class="nav-right">
+        <div class="progress-dots">
+          <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <span class="step-label">Krok 2 z 4</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1 class="screen-title">Jaká je webová adresa (URL) vašeho již existujícího e-shopu *</h1>
+    <p class="screen-sub" style="margin-bottom:24px">URL najdete v řádku prohlížeče (např. https://www.shoptet.cz) – zkopírujte ji a vložte níže.</p>
+
+    <div id="url-fields" style="display:flex; flex-direction:column; gap:12px;">
+      <input class="text-input" type="url" placeholder="https://www.mujeshop.cz" id="url-input" oninput="clearUrlHint()" />
+    </div>
+    <div id="s3-error" class="error-msg" style="margin-top:8px">⚠ Tato otázka je povinná. Prosím, zadejte URL vašeho e-shopu.</div>
+    <p id="s3-hint" class="url-hint">Před přidáním další URL nejprve vyplňte tu první.</p>
+    <button class="validate-btn" id="add-url-btn" onclick="addUrlField()" style="margin-top:12px">+ Přidat další URL</button>
+  </div>
+
+  <div class="bottom-bar has-back">
+    <div class="nav-btn-group">
+      <button class="circle-btn secondary" onclick="backFromS3()">←</button>
+      <span class="nav-btn-label">Zpět</span>
+    </div>
+    <div class="nav-btn-group">
+      <button class="circle-btn" onclick="nextFromS3()">→</button>
+      <span class="nav-btn-label">Pokračovat</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 4 – Telefonní číslo
+════════════════════════════════════════════════ -->
+<div id="s4" class="screen">
+  <nav>
+    <div class="nav-inner">
+      <div class="logo" style="gap:0; line-height:0"><svg width="143" height="34" viewBox="0 0 143 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.4485 0H7.90137V13.6019H21.4485V0Z" fill="#FCAF00"/>
+<path d="M13.5471 15.875H0V29.4769H13.5471V15.875Z" fill="#00E25A"/>
+<path d="M29.3567 15.875H15.8096V29.4769H29.3567V15.875Z" fill="#3B88FF"/>
+<path d="M48.212 25.9113C45.1577 25.9113 43.6875 24.8915 43.3891 22.3028H39.1416C39.2908 26.8456 42.5865 29.4272 48.3967 29.4272C53.2124 29.4272 56.7212 26.9954 56.7212 22.6379C56.7212 18.0095 53.1272 16.954 48.7234 15.9913C45.5555 15.2995 44.0568 14.786 44.0568 13.0459C44.0568 11.5126 45.5839 10.5213 47.9208 10.5213C50.2576 10.5213 51.8131 11.5982 52.0546 13.7662H56.2169C55.8831 9.43733 52.772 7.0625 47.9563 7.0625C43.1405 7.0625 39.7525 9.25191 39.7525 13.4952C39.7525 17.9739 43.2542 18.9937 47.0826 19.8637C50.35 20.6126 52.3885 21.0333 52.3885 23.1372C52.3885 25.1269 50.4423 25.9042 48.2262 25.9042" fill="black"/>
+<path d="M68.8458 28.9478H72.9229V18.878C72.9229 15.5047 70.792 13.1014 67.617 13.1014C65.5217 13.1014 64.2645 13.9144 63.1564 15.5404H63.0712V7.45312H58.9941V28.9549H63.0712V20.2044C63.0712 18.1006 64.3852 16.66 66.1823 16.66C67.887 16.66 68.8458 17.8296 68.8458 19.4842V28.9549V28.9478Z" fill="black"/>
+<path d="M82.7037 29.4044C87.4698 29.4044 90.7371 25.8529 90.7371 21.253C90.7371 16.6531 87.4769 13.1016 82.7037 13.1016C77.9306 13.1016 74.6846 16.6531 74.6846 21.253C74.6846 25.8529 77.9448 29.4044 82.7037 29.4044ZM82.7037 16.2038C85.1968 16.2038 86.5961 18.2435 86.5961 21.253C86.5961 24.2625 85.1897 26.2665 82.7037 26.2665C80.2177 26.2665 78.8113 24.2554 78.8113 21.253C78.8113 18.2506 80.1893 16.2038 82.7037 16.2038Z" fill="black"/>
+<path d="M101.157 13.1048C99.0615 13.1048 97.6267 14.1032 96.6323 15.4582H96.547V13.5327H92.6191V34.0004H96.6962V27.204H96.7601C97.6267 28.5233 99.033 29.4005 101.192 29.4005C105.149 29.4005 107.834 26.2412 107.834 21.2491C107.834 16.257 105.234 13.0977 101.157 13.0977M100.319 25.9987C97.8895 25.9987 96.6039 24.173 96.6039 21.3703C96.6039 18.5676 97.6196 16.4067 100.17 16.4067C102.719 16.4067 103.7 18.4535 103.7 21.3703C103.7 24.2872 102.386 25.9987 100.319 25.9987Z" fill="black"/>
+<path d="M129.22 24.3481C128.773 25.5248 127.842 26.2451 126.258 26.2451C123.95 26.2451 122.636 24.776 122.33 22.3941H133.468C133.468 16.8956 130.832 13.1016 125.896 13.1016C121.407 13.1016 118.324 16.6531 118.324 21.2173C118.324 25.7816 121.194 29.3973 126.287 29.3973C130.243 29.3973 132.672 27.0795 133.24 24.341H129.227L129.22 24.3481ZM125.96 16.2609C127.814 16.2609 129.099 17.6159 129.22 19.5699H122.387C122.749 17.5588 123.801 16.2609 125.96 16.2609Z" fill="black"/>
+<path d="M134.164 13.5319V16.2419H136.295V25.2848C136.295 28.2016 138.476 28.979 140.457 28.979C142.07 28.979 143 28.9219 143 28.9219V25.9124C143 25.9124 142.304 25.9409 141.8 25.9409C140.898 25.9409 140.273 25.5487 140.273 24.4076V16.2348H142.908V13.5248H139.363C139.363 13.5248 140.109 13.0969 140.28 12.0771V8.71094H136.302V11.4994C136.238 13.1967 134.171 13.5176 134.171 13.5176L134.164 13.5319Z" fill="black"/>
+<path d="M108.373 13.5319V16.2419H110.504V25.2848C110.504 28.2016 112.684 28.979 114.666 28.979C116.279 28.979 117.209 28.9219 117.209 28.9219V25.9124C117.209 25.9124 116.513 25.9409 116.009 25.9409C115.107 25.9409 114.482 25.5487 114.482 24.4076V16.2348H117.117V13.5248H113.572C113.572 13.5248 114.318 13.0969 114.489 12.0771V8.71094H110.511V11.4994C110.447 13.1967 108.38 13.5176 108.38 13.5176L108.373 13.5319Z" fill="black"/>
+</svg></div>
+      <div class="nav-right">
+        <div class="progress-dots">
+          <div class="dot active"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <span class="step-label">Krok 2 z 4</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1 class="screen-title">Jaké je vaše telefonní číslo?</h1>
+    <p class="screen-sub">Nebudeme vás obtěžovat. Číslo využijeme pouze tehdy, když uvidíme, že vám můžeme pomoci s ještě rychlejším nastavením e-shopu.</p>
+
+    <div class="phone-row">
+      <div class="country-select-wrap">
+        <select class="country-select" id="country-select">
+          <option value="+420" selected>&#x1F1E8;&#x1F1FF; +420</option>
+          <option value="+421">&#x1F1F8;&#x1F1F0; +421</option>
+          <option value="+43">&#x1F1E6;&#x1F1F9; +43</option>
+          <option value="+49">&#x1F1E9;&#x1F1EA; +49</option>
+          <option value="+48">&#x1F1F5;&#x1F1F1; +48</option>
+          <option value="+36">&#x1F1ED;&#x1F1FA; +36</option>
+          <option value="+40">&#x1F1F7;&#x1F1F4; +40</option>
+          <option value="+386">&#x1F1F8;&#x1F1EE; +386</option>
+          <option value="+385">&#x1F1ED;&#x1F1F7; +385</option>
+          <option value="+44">&#x1F1EC;&#x1F1E7; +44</option>
+          <option value="+33">&#x1F1EB;&#x1F1F7; +33</option>
+          <option value="+39">&#x1F1EE;&#x1F1F9; +39</option>
+          <option value="+34">&#x1F1EA;&#x1F1F8; +34</option>
+          <option value="+31">&#x1F1F3;&#x1F1F1; +31</option>
+          <option value="+32">&#x1F1E7;&#x1F1EA; +32</option>
+          <option value="+41">&#x1F1E8;&#x1F1ED; +41</option>
+          <option value="+1">&#x1F1FA;&#x1F1F8; +1</option>
+          <option value="+380">&#x1F1FA;&#x1F1E6; +380</option>
+        </select>
+      </div>
+      <input class="text-input" type="tel" placeholder="777 888 999" style="width:220px" maxlength="9" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,9)" />
+    </div>
+  </div>
+
+  <div class="bottom-bar has-back">
+    <div class="nav-btn-group">
+      <button class="circle-btn secondary" onclick="backFromS4()">←</button>
+      <span class="nav-btn-label">Zpět</span>
+    </div>
+    <div class="nav-btn-group">
+      <button class="circle-btn" onclick="goTo('s5')">→</button>
+      <span class="nav-btn-label">Pokračovat</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 5 – Jste firma, nebo fyzická osoba? (s IČO po výbere)
+════════════════════════════════════════════════ -->
+<div id="s5" class="screen">
+  <nav>
+    <div class="nav-inner">
+      <div class="logo" style="gap:0; line-height:0"><svg width="143" height="34" viewBox="0 0 143 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.4485 0H7.90137V13.6019H21.4485V0Z" fill="#FCAF00"/>
+<path d="M13.5471 15.875H0V29.4769H13.5471V15.875Z" fill="#00E25A"/>
+<path d="M29.3567 15.875H15.8096V29.4769H29.3567V15.875Z" fill="#3B88FF"/>
+<path d="M48.212 25.9113C45.1577 25.9113 43.6875 24.8915 43.3891 22.3028H39.1416C39.2908 26.8456 42.5865 29.4272 48.3967 29.4272C53.2124 29.4272 56.7212 26.9954 56.7212 22.6379C56.7212 18.0095 53.1272 16.954 48.7234 15.9913C45.5555 15.2995 44.0568 14.786 44.0568 13.0459C44.0568 11.5126 45.5839 10.5213 47.9208 10.5213C50.2576 10.5213 51.8131 11.5982 52.0546 13.7662H56.2169C55.8831 9.43733 52.772 7.0625 47.9563 7.0625C43.1405 7.0625 39.7525 9.25191 39.7525 13.4952C39.7525 17.9739 43.2542 18.9937 47.0826 19.8637C50.35 20.6126 52.3885 21.0333 52.3885 23.1372C52.3885 25.1269 50.4423 25.9042 48.2262 25.9042" fill="black"/>
+<path d="M68.8458 28.9478H72.9229V18.878C72.9229 15.5047 70.792 13.1014 67.617 13.1014C65.5217 13.1014 64.2645 13.9144 63.1564 15.5404H63.0712V7.45312H58.9941V28.9549H63.0712V20.2044C63.0712 18.1006 64.3852 16.66 66.1823 16.66C67.887 16.66 68.8458 17.8296 68.8458 19.4842V28.9549V28.9478Z" fill="black"/>
+<path d="M82.7037 29.4044C87.4698 29.4044 90.7371 25.8529 90.7371 21.253C90.7371 16.6531 87.4769 13.1016 82.7037 13.1016C77.9306 13.1016 74.6846 16.6531 74.6846 21.253C74.6846 25.8529 77.9448 29.4044 82.7037 29.4044ZM82.7037 16.2038C85.1968 16.2038 86.5961 18.2435 86.5961 21.253C86.5961 24.2625 85.1897 26.2665 82.7037 26.2665C80.2177 26.2665 78.8113 24.2554 78.8113 21.253C78.8113 18.2506 80.1893 16.2038 82.7037 16.2038Z" fill="black"/>
+<path d="M101.157 13.1048C99.0615 13.1048 97.6267 14.1032 96.6323 15.4582H96.547V13.5327H92.6191V34.0004H96.6962V27.204H96.7601C97.6267 28.5233 99.033 29.4005 101.192 29.4005C105.149 29.4005 107.834 26.2412 107.834 21.2491C107.834 16.257 105.234 13.0977 101.157 13.0977M100.319 25.9987C97.8895 25.9987 96.6039 24.173 96.6039 21.3703C96.6039 18.5676 97.6196 16.4067 100.17 16.4067C102.719 16.4067 103.7 18.4535 103.7 21.3703C103.7 24.2872 102.386 25.9987 100.319 25.9987Z" fill="black"/>
+<path d="M129.22 24.3481C128.773 25.5248 127.842 26.2451 126.258 26.2451C123.95 26.2451 122.636 24.776 122.33 22.3941H133.468C133.468 16.8956 130.832 13.1016 125.896 13.1016C121.407 13.1016 118.324 16.6531 118.324 21.2173C118.324 25.7816 121.194 29.3973 126.287 29.3973C130.243 29.3973 132.672 27.0795 133.24 24.341H129.227L129.22 24.3481ZM125.96 16.2609C127.814 16.2609 129.099 17.6159 129.22 19.5699H122.387C122.749 17.5588 123.801 16.2609 125.96 16.2609Z" fill="black"/>
+<path d="M134.164 13.5319V16.2419H136.295V25.2848C136.295 28.2016 138.476 28.979 140.457 28.979C142.07 28.979 143 28.9219 143 28.9219V25.9124C143 25.9124 142.304 25.9409 141.8 25.9409C140.898 25.9409 140.273 25.5487 140.273 24.4076V16.2348H142.908V13.5248H139.363C139.363 13.5248 140.109 13.0969 140.28 12.0771V8.71094H136.302V11.4994C136.238 13.1967 134.171 13.5176 134.171 13.5176L134.164 13.5319Z" fill="black"/>
+<path d="M108.373 13.5319V16.2419H110.504V25.2848C110.504 28.2016 112.684 28.979 114.666 28.979C116.279 28.979 117.209 28.9219 117.209 28.9219V25.9124C117.209 25.9124 116.513 25.9409 116.009 25.9409C115.107 25.9409 114.482 25.5487 114.482 24.4076V16.2348H117.117V13.5248H113.572C113.572 13.5248 114.318 13.0969 114.489 12.0771V8.71094H110.511V11.4994C110.447 13.1967 108.38 13.5176 108.38 13.5176L108.373 13.5319Z" fill="black"/>
+</svg></div>
+      <div class="nav-right">
+        <div class="progress-dots">
+          <div class="dot active"></div><div class="dot active"></div><div class="dot active"></div><div class="dot"></div>
+        </div>
+        <span class="step-label">Krok 3 z 4</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1 class="screen-title">Jste firma, nebo fyzická osoba? *</h1>
+    <p class="screen-sub">Správné fakturační údaje od začátku – žádné závazky, údaje využijeme pouze pokud se rozhodnete po zkušební verzi pokračovat.</p>
+
+    <div class="options-row" style="align-items:flex-start;">
+      <!-- Firma card – IČO input sa zobrazí po výbere -->
+      <div class="option-card wide ico-card" id="s5-firma"
+           onclick="selectIcoCard(this, 's5-type', 'firma')"
+           data-group="s5-type">
+        <div class="ico-card-inner" style="width:100%">
+          <div class="ico-card-header">
+            <div class="option-label">Firma</div>
+            <div class="radio-circle"><div class="radio-dot"></div></div>
+          </div>
+          <input class="text-input ico-input" type="text" placeholder="Vaše IČO" id="s5-firma-ico"
+                 oninput="document.getElementById('s5-ico-error').classList.remove('visible')"
+                 onclick="event.stopPropagation()" />
+          <div id="s5-ico-error" class="error-msg" style="margin-top:8px">⚠ IČO je povinné pro firmy.</div>
+        </div>
+      </div>
+
+      <!-- Fyzická osoba card – IČO input (nepovinné) sa zobrazí po výbere -->
+      <div class="option-card wide ico-card" id="s5-fo"
+           onclick="selectIcoCard(this, 's5-type', 'fo')"
+           data-group="s5-type">
+        <div class="ico-card-inner" style="width:100%">
+          <div class="ico-card-header">
+            <div class="option-label">Fyzická osoba</div>
+            <div class="radio-circle"><div class="radio-dot"></div></div>
+          </div>
+          <div class="ico-sub">IČO (nepovinné), vyplňte pokud podnikáte</div>
+          <input class="text-input ico-input" type="text" placeholder="Vaše IČO"
+                 onclick="event.stopPropagation()" />
+        </div>
+      </div>
+    </div>
+    <div id="s5-error" class="error-msg">⚠ Tato otázka je povinná. Prosím, vyberte jednu z možností.</div>
+  </div>
+
+  <div class="bottom-bar has-back">
+    <div class="nav-btn-group">
+      <button class="circle-btn secondary" onclick="goTo('s4')">←</button>
+      <span class="nav-btn-label">Zpět</span>
+    </div>
+    <div class="nav-btn-group">
+      <button class="circle-btn" onclick="nextFromS5()">→</button>
+      <span class="nav-btn-label">Pokračovat</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 8 – Partnerský identifikátor / Affiliate kód
+════════════════════════════════════════════════ -->
+<div id="s8" class="screen">
+  <nav>
+    <div class="nav-inner">
+      <div class="logo" style="gap:0; line-height:0"><svg width="143" height="34" viewBox="0 0 143 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.4485 0H7.90137V13.6019H21.4485V0Z" fill="#FCAF00"/>
+<path d="M13.5471 15.875H0V29.4769H13.5471V15.875Z" fill="#00E25A"/>
+<path d="M29.3567 15.875H15.8096V29.4769H29.3567V15.875Z" fill="#3B88FF"/>
+<path d="M48.212 25.9113C45.1577 25.9113 43.6875 24.8915 43.3891 22.3028H39.1416C39.2908 26.8456 42.5865 29.4272 48.3967 29.4272C53.2124 29.4272 56.7212 26.9954 56.7212 22.6379C56.7212 18.0095 53.1272 16.954 48.7234 15.9913C45.5555 15.2995 44.0568 14.786 44.0568 13.0459C44.0568 11.5126 45.5839 10.5213 47.9208 10.5213C50.2576 10.5213 51.8131 11.5982 52.0546 13.7662H56.2169C55.8831 9.43733 52.772 7.0625 47.9563 7.0625C43.1405 7.0625 39.7525 9.25191 39.7525 13.4952C39.7525 17.9739 43.2542 18.9937 47.0826 19.8637C50.35 20.6126 52.3885 21.0333 52.3885 23.1372C52.3885 25.1269 50.4423 25.9042 48.2262 25.9042" fill="black"/>
+<path d="M68.8458 28.9478H72.9229V18.878C72.9229 15.5047 70.792 13.1014 67.617 13.1014C65.5217 13.1014 64.2645 13.9144 63.1564 15.5404H63.0712V7.45312H58.9941V28.9549H63.0712V20.2044C63.0712 18.1006 64.3852 16.66 66.1823 16.66C67.887 16.66 68.8458 17.8296 68.8458 19.4842V28.9549V28.9478Z" fill="black"/>
+<path d="M82.7037 29.4044C87.4698 29.4044 90.7371 25.8529 90.7371 21.253C90.7371 16.6531 87.4769 13.1016 82.7037 13.1016C77.9306 13.1016 74.6846 16.6531 74.6846 21.253C74.6846 25.8529 77.9448 29.4044 82.7037 29.4044ZM82.7037 16.2038C85.1968 16.2038 86.5961 18.2435 86.5961 21.253C86.5961 24.2625 85.1897 26.2665 82.7037 26.2665C80.2177 26.2665 78.8113 24.2554 78.8113 21.253C78.8113 18.2506 80.1893 16.2038 82.7037 16.2038Z" fill="black"/>
+<path d="M101.157 13.1048C99.0615 13.1048 97.6267 14.1032 96.6323 15.4582H96.547V13.5327H92.6191V34.0004H96.6962V27.204H96.7601C97.6267 28.5233 99.033 29.4005 101.192 29.4005C105.149 29.4005 107.834 26.2412 107.834 21.2491C107.834 16.257 105.234 13.0977 101.157 13.0977M100.319 25.9987C97.8895 25.9987 96.6039 24.173 96.6039 21.3703C96.6039 18.5676 97.6196 16.4067 100.17 16.4067C102.719 16.4067 103.7 18.4535 103.7 21.3703C103.7 24.2872 102.386 25.9987 100.319 25.9987Z" fill="black"/>
+<path d="M129.22 24.3481C128.773 25.5248 127.842 26.2451 126.258 26.2451C123.95 26.2451 122.636 24.776 122.33 22.3941H133.468C133.468 16.8956 130.832 13.1016 125.896 13.1016C121.407 13.1016 118.324 16.6531 118.324 21.2173C118.324 25.7816 121.194 29.3973 126.287 29.3973C130.243 29.3973 132.672 27.0795 133.24 24.341H129.227L129.22 24.3481ZM125.96 16.2609C127.814 16.2609 129.099 17.6159 129.22 19.5699H122.387C122.749 17.5588 123.801 16.2609 125.96 16.2609Z" fill="black"/>
+<path d="M134.164 13.5319V16.2419H136.295V25.2848C136.295 28.2016 138.476 28.979 140.457 28.979C142.07 28.979 143 28.9219 143 28.9219V25.9124C143 25.9124 142.304 25.9409 141.8 25.9409C140.898 25.9409 140.273 25.5487 140.273 24.4076V16.2348H142.908V13.5248H139.363C139.363 13.5248 140.109 13.0969 140.28 12.0771V8.71094H136.302V11.4994C136.238 13.1967 134.171 13.5176 134.171 13.5176L134.164 13.5319Z" fill="black"/>
+<path d="M108.373 13.5319V16.2419H110.504V25.2848C110.504 28.2016 112.684 28.979 114.666 28.979C116.279 28.979 117.209 28.9219 117.209 28.9219V25.9124C117.209 25.9124 116.513 25.9409 116.009 25.9409C115.107 25.9409 114.482 25.5487 114.482 24.4076V16.2348H117.117V13.5248H113.572C113.572 13.5248 114.318 13.0969 114.489 12.0771V8.71094H110.511V11.4994C110.447 13.1967 108.38 13.5176 108.38 13.5176L108.373 13.5319Z" fill="black"/>
+</svg></div>
+      <div class="nav-right">
+        <div class="progress-dots">
+          <div class="dot active"></div><div class="dot active"></div><div class="dot active"></div><div class="dot active"></div>
+        </div>
+        <span class="step-label">Krok 4 z 4</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1 class="screen-title">Jaký je váš Partnerský identifikátor nebo affiliate kód? *</h1>
+    <p class="screen-sub">Svůj Partnerský kód najdete v CMS, v sekci nastavení pod základními nastaveními.</p>
+
+    <div class="input-wrap">
+      <input class="text-input" type="text" placeholder="Partnerský kód/ affiliate kód" id="s8-partner-input" />
+      <div id="s8-error" class="error-msg" style="margin-top:8px">⚠ Tato otázka je povinná. Prosím, zadejte váš Partnerský kód.</div>
+    </div>
+  </div>
+
+  <div class="bottom-bar has-back">
+    <div class="nav-btn-group">
+      <button class="circle-btn secondary" onclick="goTo('s1')">←</button>
+      <span class="nav-btn-label">Zpět</span>
+    </div>
+    <div class="nav-btn-group">
+      <button class="circle-btn" onclick="nextFromS8()">→</button>
+      <span class="nav-btn-label">Pokračovat</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 9 – Loader (poslední obrazovka)
+════════════════════════════════════════════════ -->
+<div id="s9" class="screen">
+  <nav>
+    <div class="nav-inner">
+      <div class="logo" style="gap:0; line-height:0"><svg width="143" height="34" viewBox="0 0 143 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.4485 0H7.90137V13.6019H21.4485V0Z" fill="#FCAF00"/>
+<path d="M13.5471 15.875H0V29.4769H13.5471V15.875Z" fill="#00E25A"/>
+<path d="M29.3567 15.875H15.8096V29.4769H29.3567V15.875Z" fill="#3B88FF"/>
+<path d="M48.212 25.9113C45.1577 25.9113 43.6875 24.8915 43.3891 22.3028H39.1416C39.2908 26.8456 42.5865 29.4272 48.3967 29.4272C53.2124 29.4272 56.7212 26.9954 56.7212 22.6379C56.7212 18.0095 53.1272 16.954 48.7234 15.9913C45.5555 15.2995 44.0568 14.786 44.0568 13.0459C44.0568 11.5126 45.5839 10.5213 47.9208 10.5213C50.2576 10.5213 51.8131 11.5982 52.0546 13.7662H56.2169C55.8831 9.43733 52.772 7.0625 47.9563 7.0625C43.1405 7.0625 39.7525 9.25191 39.7525 13.4952C39.7525 17.9739 43.2542 18.9937 47.0826 19.8637C50.35 20.6126 52.3885 21.0333 52.3885 23.1372C52.3885 25.1269 50.4423 25.9042 48.2262 25.9042" fill="black"/>
+<path d="M68.8458 28.9478H72.9229V18.878C72.9229 15.5047 70.792 13.1014 67.617 13.1014C65.5217 13.1014 64.2645 13.9144 63.1564 15.5404H63.0712V7.45312H58.9941V28.9549H63.0712V20.2044C63.0712 18.1006 64.3852 16.66 66.1823 16.66C67.887 16.66 68.8458 17.8296 68.8458 19.4842V28.9549V28.9478Z" fill="black"/>
+<path d="M82.7037 29.4044C87.4698 29.4044 90.7371 25.8529 90.7371 21.253C90.7371 16.6531 87.4769 13.1016 82.7037 13.1016C77.9306 13.1016 74.6846 16.6531 74.6846 21.253C74.6846 25.8529 77.9448 29.4044 82.7037 29.4044ZM82.7037 16.2038C85.1968 16.2038 86.5961 18.2435 86.5961 21.253C86.5961 24.2625 85.1897 26.2665 82.7037 26.2665C80.2177 26.2665 78.8113 24.2554 78.8113 21.253C78.8113 18.2506 80.1893 16.2038 82.7037 16.2038Z" fill="black"/>
+<path d="M101.157 13.1048C99.0615 13.1048 97.6267 14.1032 96.6323 15.4582H96.547V13.5327H92.6191V34.0004H96.6962V27.204H96.7601C97.6267 28.5233 99.033 29.4005 101.192 29.4005C105.149 29.4005 107.834 26.2412 107.834 21.2491C107.834 16.257 105.234 13.0977 101.157 13.0977M100.319 25.9987C97.8895 25.9987 96.6039 24.173 96.6039 21.3703C96.6039 18.5676 97.6196 16.4067 100.17 16.4067C102.719 16.4067 103.7 18.4535 103.7 21.3703C103.7 24.2872 102.386 25.9987 100.319 25.9987Z" fill="black"/>
+<path d="M129.22 24.3481C128.773 25.5248 127.842 26.2451 126.258 26.2451C123.95 26.2451 122.636 24.776 122.33 22.3941H133.468C133.468 16.8956 130.832 13.1016 125.896 13.1016C121.407 13.1016 118.324 16.6531 118.324 21.2173C118.324 25.7816 121.194 29.3973 126.287 29.3973C130.243 29.3973 132.672 27.0795 133.24 24.341H129.227L129.22 24.3481ZM125.96 16.2609C127.814 16.2609 129.099 17.6159 129.22 19.5699H122.387C122.749 17.5588 123.801 16.2609 125.96 16.2609Z" fill="black"/>
+<path d="M134.164 13.5319V16.2419H136.295V25.2848C136.295 28.2016 138.476 28.979 140.457 28.979C142.07 28.979 143 28.9219 143 28.9219V25.9124C143 25.9124 142.304 25.9409 141.8 25.9409C140.898 25.9409 140.273 25.5487 140.273 24.4076V16.2348H142.908V13.5248H139.363C139.363 13.5248 140.109 13.0969 140.28 12.0771V8.71094H136.302V11.4994C136.238 13.1967 134.171 13.5176 134.171 13.5176L134.164 13.5319Z" fill="black"/>
+<path d="M108.373 13.5319V16.2419H110.504V25.2848C110.504 28.2016 112.684 28.979 114.666 28.979C116.279 28.979 117.209 28.9219 117.209 28.9219V25.9124C117.209 25.9124 116.513 25.9409 116.009 25.9409C115.107 25.9409 114.482 25.5487 114.482 24.4076V16.2348H117.117V13.5248H113.572C113.572 13.5248 114.318 13.0969 114.489 12.0771V8.71094H110.511V11.4994C110.447 13.1967 108.38 13.5176 108.38 13.5176L108.373 13.5319Z" fill="black"/>
+</svg></div>
+      <div class="nav-right">
+        <div class="progress-dots">
+          <div class="dot active"></div><div class="dot active"></div><div class="dot active"></div><div class="dot active"></div>
+        </div>
+        <span class="step-label">Krok 4 z 4</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="loader-center">
+    <div class="spinner"></div>
+    <div class="loader-title">Připravujeme váš e-shop…</div>
+    <p class="loader-sub">Za chvíli budete přesměrování do svého nového e-shopu na Shoptetu.</p>
+  </div>
+</div>
+
+<script>
+  // ── STATE ──
+  // Tracks answers to drive conditional navigation
+  const state = {
+    q1: null,        // 'newcomer' | 'migration' | 'partner' | 'testing' | 'existing' | 'other'
+    subjectType: null  // 'firma' | 'fo'
+  };
+
+  // Helper: get Q1 category from selected label text
+  function getQ1Category() {
+    const selected = document.querySelector('#s1 .option-card.selected');
+    if (!selected) return null;
+    const label = selected.querySelector('.option-label').textContent.trim();
+    if (label.includes('převést'))   return 'migration';
+    if (label.includes('pro klienta')) return 'partner';
+    if (label.includes('vyzkoušet')) return 'testing';
+    if (label.includes('nemám'))     return 'newcomer';
+    if (label.includes('Shoptetu mám')) return 'existing';
+    return 'other'; // Jiné
+  }
+
+  // ── NAVIGATION ──
+  function goTo(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ── SHOW / HIDE ERROR ──
+  function showError(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('visible');
+    void el.offsetWidth;
+    el.classList.add('visible');
+  }
+
+  // ── RADIO SELECT (single) ──
+  function selectRadio(card, group) {
+    const selector = group ? `[data-group="${group}"]` : `[onclick*="${group}"]`;
+    document.querySelectorAll(selector).forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    const screen = card.closest('.screen');
+    if (screen) {
+      const err = screen.querySelector('.error-msg');
+      if (err) err.classList.remove('visible');
+    }
+  }
+
+  // ── CHECKBOX TOGGLE (multi) ──
+  function toggleCheck(card) {
+    card.classList.toggle('selected');
+  }
+
+  // ── JINÉ: expand textarea on select ──
+  function selectJine(card) {
+    selectRadio(card, 's1-reason');
+    setTimeout(() => {
+      const ta = document.getElementById('s1-jine-input');
+      if (ta) ta.focus();
+    }, 50);
+  }
+
+  // ════════════════════════════════════════════
+  //  FLOW (podľa tabuľky):
+  //
+  //  Newcomer:        s1 → s4(Phone) → s5(IČO) → sLoader
+  //  Migration:       s1 → s2(Migr.source) → s3(URL) → s4(Phone) → s5(IČO) → sLoader
+  //  Partner:         s1 → s8(Partner code) → s4(Phone) → s5(IČO) → sLoader
+  //  Testing:         s1 → s4(Phone) → s5(IČO) → sLoader
+  //  Existing:        s1 → s3(URL/ID) → s4(Phone) → s5(IČO) → sLoader
+  //  Jiné/Other:      s1 → s4(Phone) → s5(IČO) → sLoader
+  // ════════════════════════════════════════════
+
+  // S1 → next
+  function nextFromS1() {
+    const selected = document.querySelector('#s1 .option-card.selected');
+    if (!selected) { showError('s1-error'); return; }
+    state.q1 = getQ1Category();
+    if (state.q1 === 'migration') goTo('s2');
+    else if (state.q1 === 'partner')   goTo('s8');
+    else if (state.q1 === 'existing')  goTo('s3');
+    else goTo('s4'); // newcomer, testing, other
+  }
+
+  // S2 (Migration source) → next: always goes to s3 (URL)
+  // S2 back button is static goTo('s1') ✅
+
+  // S3 (URL) → back
+  function backFromS3() {
+    goTo('s1'); // only existing customer uses s3
+  }
+  // S3 → next: always goes to s4 (Phone) ✅ static button
+
+  // S8 (Partner code) → next: goes to s4 (Phone) ✅ static button
+  // S8 → back: goes to s1 ✅ static button
+
+  // S4 (Phone) → back
+  function backFromS4() {
+    if (state.q1 === 'migration') goTo('s2');       // migration source was before phone
+    else if (state.q1 === 'partner')  goTo('s8');   // partner code was before phone
+    else if (state.q1 === 'existing') goTo('s3');   // URL was before phone
+    else goTo('s1'); // newcomer, testing, other
+  }
+  // S4 → next: always goes to s5 ✅ static button
+
+  // S5 (IČO – firma/FO choice) → select card and reveal input
+  function selectIcoCard(card, group, type) {
+    selectRadio(card, group);
+    state.subjectType = type;
+    // focus the input after layout settles
+    setTimeout(() => {
+      const inp = card.querySelector('.ico-input');
+      if (inp) inp.focus();
+    }, 50);
+  }
+
+  // S5 → next → loader
+  // Firma: výber + IČO povinné; Fyzická osoba: len výber povinný
+  function nextFromS5() {
+    const selected = document.querySelector('#s5 .option-card.selected');
+    if (!selected) { showError('s5-error'); return; }
+
+    if (state.subjectType === 'firma') {
+      const ico = document.getElementById('s5-firma-ico');
+      if (!ico || ico.value.trim() === '') {
+        showError('s5-ico-error');
+        ico.focus();
+        return;
+      }
+    }
+
+    goTo('s9');
+  }
+
+  // S3 (URL) → povinné pole
+  function nextFromS3() {
+    const input = document.getElementById('url-input');
+    if (!input || input.value.trim() === '') {
+      showError('s3-error');
+      input.focus();
+      return;
+    }
+    goTo('s4');
+  }
+
+  // S8 (Partner code) → povinné pole
+  function nextFromS8() {
+    const input = document.getElementById('s8-partner-input');
+    if (!input || input.value.trim() === '') {
+      showError('s8-error');
+      input.focus();
+      return;
+    }
+    goTo('s4');
+  }
+
+  // ── Add extra URL field ──
+  function addUrlField() {
+    const wrap = document.getElementById('url-fields');
+    const inputs = wrap.querySelectorAll('input');
+    const last = inputs[inputs.length - 1];
+    const hint = document.getElementById('s3-hint');
+    const btn = document.getElementById('add-url-btn');
+
+    // Soft hint if first input is empty
+    if (last.value.trim() === '') {
+      hint.classList.add('visible');
+      last.focus();
+      return;
+    }
+
+    hint.classList.remove('visible');
+    document.getElementById('s3-error').classList.remove('visible');
+
+    // Max 5 inputs
+    if (inputs.length >= 5) {
+      btn.style.display = 'none';
+      return;
+    }
+
+    const inp = document.createElement('input');
+    inp.className = 'text-input';
+    inp.type = 'url';
+    inp.placeholder = 'https://www.druhyeshop.cz';
+    inp.oninput = clearUrlHint;
+    wrap.appendChild(inp);
+    inp.focus();
+
+    // Hide button after 5th input is added
+    if (wrap.querySelectorAll('input').length >= 5) {
+      btn.style.display = 'none';
+    }
+  }
+
+  function clearUrlHint() {
+    document.getElementById('s3-hint').classList.remove('visible');
+  }
+</script>
+</body>
+</html>
